@@ -6,7 +6,7 @@ import axios from "axios";
 
 // Axios Instance
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://noteapp-backend-1tjz.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
