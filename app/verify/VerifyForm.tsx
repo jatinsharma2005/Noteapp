@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import API from "../utils/api";
+import API from "../utils/api";  // FIXED PATH (important!)
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 
@@ -9,20 +9,24 @@ export default function VerifyForm() {
   const params = useSearchParams();
   const emailFromURL = params.get("email");
 
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
 
-  const maskEmail = (email) => {
+  // ---- FIX: Typed function parameter ----
+  const maskEmail = (email: string): string => {
     if (!email) return "";
     const [name, domain] = email.split("@");
     return name[0] + "*****@" + domain;
   };
 
   useEffect(() => {
-    if (emailFromURL) setEmail(emailFromURL);
+    if (emailFromURL) {
+      setEmail(emailFromURL);
+    }
   }, [emailFromURL]);
 
-  const handleSubmit = async (e) => {
+  // ---- FIX: Added React.FormEvent ----
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const res = await API.post("/auth/verify-otp", { email, otp });
