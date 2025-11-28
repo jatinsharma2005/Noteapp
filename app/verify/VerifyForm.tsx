@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import API from "../../utils/api";
+import API from "../utils/api";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 

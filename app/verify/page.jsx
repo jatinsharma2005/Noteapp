@@ -1,7 +1,9 @@
-"use client";
-
 import { Suspense } from "react";
-import VerifyForm from "./VerifyForm";
+import dynamic from "next/dynamic";
+
+const VerifyForm = dynamic(() => import("./VerifyForm"), {
+  ssr: false,
+});
 
 export default function VerifyPage() {
   return (
