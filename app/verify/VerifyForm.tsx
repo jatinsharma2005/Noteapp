@@ -12,8 +12,7 @@ export default function VerifyForm() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
 
-  // Mask email for display
-  const maskEmail = (email: string) => {
+  const maskEmail = (email) => {
     if (!email) return "";
     const [name, domain] = email.split("@");
     return name[0] + "*****@" + domain;
@@ -23,8 +22,9 @@ export default function VerifyForm() {
     if (emailFromURL) setEmail(emailFromURL);
   }, [emailFromURL]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const res = await API.post("/auth/verify-otp", { email, otp });
 
     if (res.data.success) {
@@ -50,12 +50,12 @@ export default function VerifyForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-black">
-          <input type="hidden" name="email" value={email} />
+          <input type="hidden" value={email} />
 
           <div>
             <label className="block mb-1 font-medium">Enter OTP</label>
             <input
-              name="otp"
+              type="text"
               required
               placeholder="6-digit OTP"
               onChange={(e) => setOtp(e.target.value)}
@@ -63,10 +63,7 @@ export default function VerifyForm() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition"
-          >
+          <button className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition">
             Verify OTP
           </button>
         </form>
