@@ -1,8 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Root theme variables */
+/* Custom global CSS */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -36,7 +34,7 @@ body {
   animation: fadeIn 0.25s ease-out forwards;
 }
 
-/* Scale in popup modal */
+/* Scale In Popup Animation */
 @keyframes scaleIn {
   0% {
     opacity: 0;
