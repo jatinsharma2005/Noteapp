@@ -1,31 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import API from "../utils/api";  // FIXED PATH (important!)
+import API from "../utils/api";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 
 export default function VerifyForm() {
   const params = useSearchParams();
-  const emailFromURL = params.get("email");
+  const emailFromURL = params.get("email") || "";
 
   const [email, setEmail] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
 
-  // ---- FIX: Typed function parameter ----
   const maskEmail = (email: string): string => {
     if (!email) return "";
     const [name, domain] = email.split("@");
-    return name[0] + "*****@" + domain;
+    return `${name[0]}*****@${domain}`;
   };
 
   useEffect(() => {
-    if (emailFromURL) {
-      setEmail(emailFromURL);
-    }
+    setEmail(emailFromURL);
   }, [emailFromURL]);
 
-  // ---- FIX: Added React.FormEvent ----
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

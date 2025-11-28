@@ -1,11 +1,12 @@
-"use client";
-
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
-
+import { Suspense } from "react";
 import VerifyForm from "./VerifyForm";
 
+export const dynamic = "force-dynamic";
+
 export default function VerifyPage() {
-  return <VerifyForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyForm />
+    </Suspense>
+  );
 }
