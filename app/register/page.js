@@ -16,7 +16,7 @@ export default function Register() {
   // -----------------------------
   // EMAIL VALIDATION (Gmail only)
   // -----------------------------
-  const validateEmail = (value) => {
+  const validateEmail = (value: string) => {
     if (!value.endsWith("@gmail.com")) {
       setEmailError("Only Gmail accounts are allowed (@gmail.com)");
     } else {
@@ -27,7 +27,7 @@ export default function Register() {
   // -----------------------------
   // PASSWORD STRENGTH CHECKER
   // -----------------------------
-  const checkPasswordStrength = (password) => {
+  const checkPasswordStrength = (password: string) => {
     let strength = 0;
 
     if (password.length >= 6) strength++;
@@ -45,59 +45,55 @@ export default function Register() {
   }, [form.password]);
 
   // -----------------------------
-  // FORM INPUT HANDLER
+  // INPUT HANDLER
   // -----------------------------
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
-
     setForm({ ...form, [name]: value });
 
     if (name === "email") validateEmail(value);
   };
 
   // -----------------------------
-  // SUBMIT REGISTER
+  // SUBMIT (INSTANT OTP)
   // -----------------------------
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     if (emailError) {
-      toast.error("Please enter a valid Gmail address");
+      toast.error("Please enter a valid Gmail");
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/register", form);
+      // ⚡ Step 1 — Wake up Render backend instantly
+      await API.get("/auth/warmup").catch(() => {});
 
-      if (res.data.errors) {
-        toast.error(res.data.errors[0]?.msg || "Invalid input");
+      // ⚡ Step 2 — Register user instantly
+      const response = await API.post("/auth/register", form);
+      const res = response.data;
+
+      if (!res.success) {
+        toast.error(res.message || "Registration failed");
         setLoading(false);
         return;
       }
 
-      if (!res.data.success) {
-        toast.error(res.data.message || "Registration failed");
-        setLoading(false);
-        return;
-      }
+      toast.success("OTP sent instantly!");
 
-      toast.success("OTP sent to your Gmail!");
-
-      // Redirect to Verify OTP page
-      setTimeout(() => {
-        router.push(`/verify?email=${form.email}`);
-      }, 700);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
+      // ⚡ Step 3 — Redirect to OTP page instantly
+      router.push(`/verify?email=${form.email}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   // -----------------------------
-  // PASSWORD STRENGTH COLOR
+  // PASSWORD STRENGTH COLORS
   // -----------------------------
   const strengthColor =
     passwordStrength === "Weak"
@@ -108,7 +104,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 relative">
-      {/* Small Home Button */}
       <button
         onClick={() => router.push("/")}
         className="absolute top-5 left-5 text-blue-600 hover:underline text-sm font-medium"
@@ -165,7 +160,6 @@ export default function Register() {
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-black"
             />
 
-            {/* Password Strength Indicator */}
             {form.password && (
               <p className={`mt-1 text-sm font-semibold ${strengthColor}`}>
                 Password Strength: {passwordStrength}

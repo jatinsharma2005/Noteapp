@@ -9,9 +9,12 @@ export default function VerifyForm() {
   const params = useSearchParams();
   const emailFromURL = params.get("email") || "";
 
-  const [email, setEmail] = useState<string>("");
-  const [otp, setOtp] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
+  // Mask email for UI
   const maskEmail = (email: string): string => {
     if (!email) return "";
     const [name, domain] = email.split("@");
@@ -20,18 +23,74 @@ export default function VerifyForm() {
 
   useEffect(() => {
     setEmail(emailFromURL);
+
+    // ⚡ Warm up backend so OTP verify loads instantly
+    API.get("/auth/warmup").catch(() => {});
   }, [emailFromURL]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ------------------------------------
+  // VERIFY OTP
+  // ------------------------------------
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const res = await API.post("/auth/verify-otp", { email, otp });
+    if (otp.length !== 6) {
+      toast.error("OTP must be 6 digits");
+      return;
+    }
 
-    if (res.data.success) {
-      toast.success("Email verified! You can log in now.");
-      setTimeout(() => (window.location.href = "/login"), 600);
-    } else {
-      toast.error(res.data.message);
+    setLoading(true);
+
+    try {
+      const response = await API.post("/auth/verify-otp", { email, otp });
+      const res = response.data;
+
+      if (!res.success) {
+        toast.error(res.message || "Invalid OTP");
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Email verified successfully!");
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 700);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ------------------------------------
+  // RESEND OTP
+  // ------------------------------------
+  const handleResend = async () => {
+    if (!email) return;
+
+    setResendLoading(true);
+
+    try {
+      const warm = await API.get("/auth/warmup").catch(() => {});
+
+      const response = await API.post("/auth/register", {
+        name: "temp",
+        email,
+        password: "temp123!@#", // backend ignores because email exists
+      });
+
+      const res = response.data;
+
+      if (res.success) {
+        toast.success("New OTP sent!");
+      } else {
+        toast.error(res.message || "Failed to resend OTP");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -57,16 +116,30 @@ export default function VerifyForm() {
             <input
               type="text"
               required
+              maxLength={6}
               placeholder="6-digit OTP"
               onChange={(e) => setOtp(e.target.value)}
               className="w-full border px-4 py-2 rounded text-black"
             />
           </div>
 
-          <button className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition">
-            Verify OTP
+          <button
+            disabled={loading}
+            className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
+
+        <div className="text-center mt-4">
+          <button
+            onClick={handleResend}
+            disabled={resendLoading}
+            className="text-blue-600 hover:underline"
+          >
+            {resendLoading ? "Sending..." : "Resend OTP"}
+          </button>
+        </div>
       </div>
     </div>
   );
